@@ -50,6 +50,7 @@ body {
   font-weight: normal;
   margin: 10px 0 30px;       /* less top margin, more bottom */
   transition: font-size 0.3s ease;
+    color: #b2e4de;
 }
 
 /* Progress bar styles removed */
@@ -63,7 +64,7 @@ body {
   border-radius: 10px;
   cursor: pointer;
   transition: all 0.3s ease;
-  margin-top: 60px;
+  margin-top: 70px;
 }
 
 #startStopBtn:hover {
