@@ -1,89 +1,129 @@
-body {
-  margin: 0;
-  padding: 0;
-  background-color: #000000;
-  color: #ffffff;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  height: 100vh;
-  overflow: hidden;
+let targetHour = 22;
+let targetMinute = 0;
+let countdownInterval = null;
+let vibrationInterval = null;
+let isRunning = false;
+let totalDuration = 0;
+let endTime = null;
+let wakeLock = null;
+
+const timeInput = document.getElementById('target-time');
+const startStopBtn = document.getElementById('startStopBtn');
+const title = document.getElementById('main-title');
+
+// Progress bar removed
+
+function updateCountdown() {
+  const now = new Date();
+  const diff = endTime - now;
+
+  if (diff <= 0) {
+    clearInterval(countdownInterval);
+    isRunning = false;
+
+    document.getElementById('hours').textContent = '00';
+    document.getElementById('minutes').textContent = '00';
+    document.getElementById('seconds').textContent = '00';
+
+    startStopBtn.textContent = 'Start';
+    timeInput.style.display = 'inline-block';
+    title.classList.remove('hidden');
+
+    const beep = new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
+    beep.play();
+
+    if ("vibrate" in navigator) {
+      vibrationInterval = setInterval(() => {
+        navigator.vibrate([300, 150, 300]);
+      }, 1000);
+    }
+
+    setTimeout(() => {
+      alert("⏰ Time's up!");
+      if (vibrationInterval) clearInterval(vibrationInterval);
+      navigator.vibrate(0);
+    }, 1500);
+
+    return;
+  }
+
+  const hours = String(Math.floor((diff / (1000 * 60 * 60)) % 24)).padStart(2, '0');
+  const minutes = String(Math.floor((diff / (1000 * 60)) % 60)).padStart(2, '0');
+  const seconds = String(Math.floor((diff / 1000) % 60)).padStart(2, '0');
+
+  document.getElementById('hours').textContent = hours;
+  document.getElementById('minutes').textContent = minutes;
+  document.getElementById('seconds').textContent = seconds;
 }
 
-.main {
-  text-align: center;
-  width: 100%;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  position: relative;
-  transition: all 0.4s ease;
+startStopBtn.addEventListener('click', () => {
+  if (!isRunning) {
+    const [hour, minute] = timeInput.value.split(':');
+    targetHour = parseInt(hour);
+    targetMinute = parseInt(minute);
+
+    const now = new Date();
+    endTime = new Date();
+    endTime.setHours(targetHour, targetMinute, 0, 0);
+
+    if (endTime <= now) {
+      alert("Selected time already passed today!");
+      return;
+    }
+
+    totalDuration = endTime - now;
+
+    timeInput.style.display = 'none';
+    startStopBtn.textContent = 'Stop';
+    title.classList.add('hidden');
+
+    updateCountdown();
+    countdownInterval = setInterval(updateCountdown, 1000);
+    isRunning = true;
+  } else {
+    clearInterval(countdownInterval);
+    if (vibrationInterval) clearInterval(vibrationInterval);
+    navigator.vibrate(0);
+
+    isRunning = false;
+    timeInput.style.display = 'inline-block';
+    startStopBtn.textContent = 'Start';
+    title.classList.remove('hidden');
+  }
+});
+
+document.getElementById('fullscreenBtn').addEventListener('click', () => {
+  const docElm = document.documentElement;
+  if (!document.fullscreenElement && docElm.requestFullscreen) {
+    docElm.requestFullscreen();
+  } else if (document.exitFullscreen) {
+    document.exitFullscreen();
+  }
+});
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && !isRunning) {
+    startStopBtn.click();
+  }
+});
+
+// Wake Lock to keep screen on
+async function requestWakeLock() {
+  try {
+    wakeLock = await navigator.wakeLock.request('screen');
+    wakeLock.addEventListener('release', () => {
+      console.log('Wake Lock released');
+    });
+    console.log('Wake Lock is active');
+  } catch (err) {
+    console.error(`${err.name}, ${err.message}`);
+  }
 }
 
-.title {
-  font-size: 3rem;
-  margin-bottom: 20px;
-  transition: opacity 0.4s ease, transform 0.4s ease;
-  opacity: 1;
-  transform: translateY(0);
-}
+document.addEventListener('visibilitychange', () => {
+  if (wakeLock !== null && document.visibilityState === 'visible') {
+    requestWakeLock();
+  }
+});
 
-.title.hidden {
-  opacity: 0;
-  transform: translateY(-10px);
-  pointer-events: none;
-}
-
-#target-time {
-  font-size: 2rem;
-  padding: 10px;
-  background: #1e1e1e;
-  border: none;
-  color: white;
-  border-radius: 8px;
-  margin-bottom: 20px;
-}
-
-.countdown {
-  font-size: 8rem;
-  font-weight: normal;
-  margin: 20px 0 20px;
-  transition: font-size 0.3s ease;
-}
-
-/* Progress bar styles removed */
-
-#startStopBtn {
-  padding: 12px 30px;
-  font-size: 1.5rem;
-  background-color: transparent;
-  color: #ffffff;
-  border: 2px solid #ffffff;
-  border-radius: 10px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  margin-top: 10px;
-}
-
-#startStopBtn:hover {
-  background-color: rgba(255, 255, 255, 0.1);
-}
-
-#fullscreenBtn {
-  position: fixed;
-  bottom: 20px;
-  left: 20px;
-  background: transparent;
-  color: #ffffff;
-  font-size: 1.5rem;
-  border: 1px solid #ffffff;
-  border-radius: 6px;
-  padding: 5px 10px;
-  cursor: pointer;
-  z-index: 1000;
-  transition: all 0.3s ease;
-}
-
-#fullscreenBtn:hover {
-  background-color: rgba(255, 255, 255, 0.1);
-}
+requestWakeLock();
