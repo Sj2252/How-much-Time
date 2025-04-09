@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://sj2252.github.io/How-much-Time/sitemap.xml
