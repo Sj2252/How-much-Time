@@ -4,25 +4,15 @@
   <meta charset="UTF-8">
   <title>Countdown Timer</title>
   <link rel="stylesheet" href="style.css">
-  <!-- Basic Meta Tags -->
-  <meta name="description" content="A sleek countdown timer that shows how much time is left until your chosen date and time. Perfect for events, deadlines, and launches.">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <!-- Open Graph Tags -->
-  <meta property="og:title" content="How Much Time? | Countdown Timer">
-  <meta property="og:description" content="Count down to your special moment with this simple and beautiful timer.">
-  <meta property="og:url" content="https://sj2252.github.io/How-much-Time/">
-  <meta property="og:type" content="website">
-
-  <!-- Twitter Card -->
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="How Much Time? | Countdown Timer">
-  <meta name="twitter:description" content="Track how much time is left for anything — events, birthdays, deadlines. Super clean and fast.">
-
-  <!-- Favicon -->
-  <link rel="icon" href="favicon.ico">
 </head>
 <body>
+  <!-- Time Info Display -->
+  <div id="time-info">
+    <p id="start-time"></p>
+    <p id="end-time"></p>
+  </div>
+
   <div class="main">
     <h1 class="title" id="main-title">Countdown Timer</h1>
 
@@ -32,10 +22,7 @@
       <span id="hours">00</span>:<span id="minutes">00</span>:<span id="seconds">00</span>
     </div>
 
-    <!-- Progress bar removed -->
-
     <button id="startStopBtn">Start</button>
-
     <button id="fullscreenBtn" title="Fullscreen">⛶</button>
   </div>
 
