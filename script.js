@@ -5,11 +5,13 @@ let vibrationInterval = null;
 let isRunning = false;
 let totalDuration = 0;
 let endTime = null;
+let wakeLock = null;
 
 const timeInput = document.getElementById('target-time');
 const startStopBtn = document.getElementById('startStopBtn');
 const title = document.getElementById('main-title');
-const progressBar = document.getElementById('progress-bar');
+
+// Progress bar removed
 
 function updateCountdown() {
   const now = new Date();
@@ -22,28 +24,24 @@ function updateCountdown() {
     document.getElementById('hours').textContent = '00';
     document.getElementById('minutes').textContent = '00';
     document.getElementById('seconds').textContent = '00';
-    progressBar.style.width = '100%';
 
     startStopBtn.textContent = 'Start';
     timeInput.style.display = 'inline-block';
     title.classList.remove('hidden');
 
-    // 🎵 Optional: Sound
     const beep = new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
     beep.play();
 
-    // 📳 Repeating vibration
     if ("vibrate" in navigator) {
       vibrationInterval = setInterval(() => {
         navigator.vibrate([300, 150, 300]);
       }, 1000);
     }
 
-    // ⏳ Delay before alert to allow vibration
     setTimeout(() => {
       alert("⏰ Time's up!");
       if (vibrationInterval) clearInterval(vibrationInterval);
-      navigator.vibrate(0); // stop vibration
+      navigator.vibrate(0);
     }, 1500);
 
     return;
@@ -56,10 +54,6 @@ function updateCountdown() {
   document.getElementById('hours').textContent = hours;
   document.getElementById('minutes').textContent = minutes;
   document.getElementById('seconds').textContent = seconds;
-
-  const elapsed = totalDuration - diff;
-  const progress = Math.min((elapsed / totalDuration) * 100, 100);
-  progressBar.style.width = `${progress}%`;
 }
 
 startStopBtn.addEventListener('click', () => {
@@ -95,11 +89,9 @@ startStopBtn.addEventListener('click', () => {
     timeInput.style.display = 'inline-block';
     startStopBtn.textContent = 'Start';
     title.classList.remove('hidden');
-    progressBar.style.width = '0%';
   }
 });
 
-// Fullscreen button support
 document.getElementById('fullscreenBtn').addEventListener('click', () => {
   const docElm = document.documentElement;
   if (!document.fullscreenElement && docElm.requestFullscreen) {
@@ -109,9 +101,29 @@ document.getElementById('fullscreenBtn').addEventListener('click', () => {
   }
 });
 
-// Start with Enter key
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Enter' && !isRunning) {
     startStopBtn.click();
   }
 });
+
+// Wake Lock to keep screen on
+async function requestWakeLock() {
+  try {
+    wakeLock = await navigator.wakeLock.request('screen');
+    wakeLock.addEventListener('release', () => {
+      console.log('Wake Lock released');
+    });
+    console.log('Wake Lock is active');
+  } catch (err) {
+    console.error(`${err.name}, ${err.message}`);
+  }
+}
+
+document.addEventListener('visibilitychange', () => {
+  if (wakeLock !== null && document.visibilityState === 'visible') {
+    requestWakeLock();
+  }
+});
+
+requestWakeLock();
