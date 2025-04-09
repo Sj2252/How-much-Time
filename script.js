@@ -1,6 +1,7 @@
 let targetHour = 22;
 let targetMinute = 0;
 let countdownInterval = null;
+let vibrationInterval = null;
 let isRunning = false;
 let totalDuration = 0;
 let endTime = null;
@@ -27,13 +28,24 @@ function updateCountdown() {
     timeInput.style.display = 'inline-block';
     title.classList.remove('hidden');
 
-    // 📳 Vibrate if supported
+    // 🎵 Optional: Sound
+    const beep = new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
+    beep.play();
+
+    // 📳 Repeating vibration
     if ("vibrate" in navigator) {
-      navigator.vibrate([500, 200, 500]);
+      vibrationInterval = setInterval(() => {
+        navigator.vibrate([300, 150, 300]);
+      }, 1000);
     }
 
-    // 🛎️ Alert
-    alert("⏰ Time's up!");
+    // ⏳ Delay before alert to allow vibration
+    setTimeout(() => {
+      alert("⏰ Time's up!");
+      if (vibrationInterval) clearInterval(vibrationInterval);
+      navigator.vibrate(0); // stop vibration
+    }, 1500);
+
     return;
   }
 
@@ -76,8 +88,10 @@ startStopBtn.addEventListener('click', () => {
     isRunning = true;
   } else {
     clearInterval(countdownInterval);
-    isRunning = false;
+    if (vibrationInterval) clearInterval(vibrationInterval);
+    navigator.vibrate(0);
 
+    isRunning = false;
     timeInput.style.display = 'inline-block';
     startStopBtn.textContent = 'Start';
     title.classList.remove('hidden');
