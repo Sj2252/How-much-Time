@@ -10,8 +10,9 @@ let wakeLock = null;
 const timeInput = document.getElementById('target-time');
 const startStopBtn = document.getElementById('startStopBtn');
 const title = document.getElementById('main-title');
-
-// Progress bar removed
+const startTimeDisplay = document.getElementById('start-time');
+const endTimeDisplay = document.getElementById('end-time');
+const timeInfoBox = document.getElementById('time-info');
 
 function updateCountdown() {
   const now = new Date();
@@ -63,6 +64,9 @@ startStopBtn.addEventListener('click', () => {
     targetMinute = parseInt(minute);
 
     const now = new Date();
+    const startTimeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    startTimeDisplay.textContent = `${startTimeStr}`;
+
     endTime = new Date();
     endTime.setHours(targetHour, targetMinute, 0, 0);
 
@@ -70,12 +74,12 @@ startStopBtn.addEventListener('click', () => {
       alert("Selected time already passed today!");
       return;
     }
-
     totalDuration = endTime - now;
 
     timeInput.style.display = 'none';
     startStopBtn.textContent = 'Stop';
     title.classList.add('hidden');
+    timeInfoBox.style.display = 'block';
 
     updateCountdown();
     countdownInterval = setInterval(updateCountdown, 1000);
@@ -107,7 +111,6 @@ document.addEventListener('keydown', (e) => {
   }
 });
 
-// Wake Lock to keep screen on
 async function requestWakeLock() {
   try {
     wakeLock = await navigator.wakeLock.request('screen');
