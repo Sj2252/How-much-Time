@@ -96,14 +96,19 @@ startStopBtn.addEventListener('click', () => {
   }
 });
 
-document.getElementById('fullscreenBtn').addEventListener('click', () => {
+document.getElementById('fullscreenCheckbox').addEventListener('change', (e) => {
   const docElm = document.documentElement;
-  if (!document.fullscreenElement && docElm.requestFullscreen) {
-    docElm.requestFullscreen();
-  } else if (document.exitFullscreen) {
-    document.exitFullscreen();
+  if (e.target.checked) {
+    if (docElm.requestFullscreen) {
+      docElm.requestFullscreen();
+    }
+  } else {
+    if (document.fullscreenElement && document.exitFullscreen) {
+      document.exitFullscreen();
+    }
   }
 });
+
 
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Enter' && !isRunning) {
@@ -130,3 +135,9 @@ document.addEventListener('visibilitychange', () => {
 });
 
 requestWakeLock();
+document.addEventListener('fullscreenchange', () => {
+  const checkbox = document.getElementById('fullscreenCheckbox');
+  if (!document.fullscreenElement) {
+    checkbox.checked = false;
+  }
+});
